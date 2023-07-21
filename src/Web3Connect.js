@@ -5,7 +5,7 @@ import contractAbi from './contract-abi'
 import { ethers } from 'ethers'
 import axios from 'axios'
 import Image from './image'
-import BigNumber from 'bignumber.js'
+import BN from 'bignumber.js'
 const contractAddress = '0xC3B4C4eF3fE02aD91cB57efda593ed07A9278cc0';
 const walletAddress = '0x93467f0F9a09b5478B0E2ECdA979045dda53750b';
 
@@ -17,10 +17,11 @@ const Web3Connect = ({
     const { isConnected } = useAccount()
     const [loader, setLoader] = useState(false);
 
-    const tokenDecimals = new BigNumber(9);
-    const tokenAmountToTransfer = new BigNumber(amount);
-    const transferVal = tokenAmountToTransfer.multipliedBy(new BigNumber(10).pow(tokenDecimals));
-    const { isLoading, write, data, isSuccess, isError, error } = useContractWrite({ address: contractAddress, abi: contractAbi, functionName: 'transfer', args: [walletAddress, transferVal] });
+    const tokenDecimals = new BN(9);
+    const tokenAmountToTransfer = new BN(Math.ceil(Number(amount)));
+    const calculatedTransferValue = tokenAmountToTransfer.multipliedBy(new BN(10).pow(tokenDecimals));
+
+    const { isLoading, write, data, isSuccess, isError, error } = useContractWrite({ address: contractAddress, abi: contractAbi, functionName: 'transfer', args: [walletAddress, calculatedTransferValue] });
     const handleOnTransaction = () => {
         if (!isLoading) {
             setLoader(true);
@@ -43,7 +44,12 @@ const Web3Connect = ({
         if (isError) {
             const errorMessage = error.message.split('Contract Call:');
             if (errorMessage.length > 0) {
+if(errorMessage[0].toLowerCase()?.includes("subtraction overflow")) {
+alert(Number(amount).toFixed(2) + " insufficient tokens you requested");
+}else {
+
                 alert(errorMessage[0].trimEnd())
+}
             } else {
                 alert("Something went wrong!")
             }
