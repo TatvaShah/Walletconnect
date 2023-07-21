@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Web3Button } from '@web3modal/react'
-import { useAccount, useContractWrite, useToken } from 'wagmi'
+import { useAccount, useBalance, useContractWrite, useToken, useWalletClient } from 'wagmi'
 import contractAbi from './contract-abi'
 import { ethers } from 'ethers'
 import axios from 'axios'
@@ -14,7 +14,13 @@ const Web3Connect = ({
     amount
 }) => {
     console.log(amount, typeof amount)
-    const { isConnected } = useAccount()
+    const { isConnected  } = useAccount()
+    const { data: walletData  } = useWalletClient()
+    const { data : balanceData} = useBalance({ 
+    address: walletData?.account?.address,
+    token : contractAddress,
+    watch: true,
+    });
     const [loader, setLoader] = useState(false);
 
     const tokenDecimals = new BN(9);
@@ -39,17 +45,22 @@ const Web3Connect = ({
             setLoader(false);
         }
     }, [isSuccess])
-   
+
     useEffect(() => {
         if (isError) {
             const errorMessage = error.message.split('Contract Call:');
             if (errorMessage.length > 0) {
-if(errorMessage[0].toLowerCase()?.includes("subtraction overflow")) {
-alert(Number(amount).toFixed(2) + " insufficient tokens you requested");
-}else {
-
-                alert(errorMessage[0].trimEnd())
-}
+                let errorMessageToShow = errorMessage[0];
+                if (errorMessageToShow.toLowerCase()?.includes("subtraction overflow")) {
+                    errorMessageToShow = `Your EVDC balance is insufficient. EVDC tokens needed : ${Number(amount).toFixed(2)} Your EVDC balance : ${Number(balanceData?.formatted).toFixed(2)}`;
+                } else {
+                    errorMessageToShow = errorMessage[0].trimEnd();
+                }
+                if (window.ReactNativeWebView) {
+                    window.ReactNativeWebView.postMessage({ error: true, message: errorMessageToShow });
+                } else {
+                    alert(errorMessageToShow)
+                }
             } else {
                 alert("Something went wrong!")
             }
@@ -64,7 +75,7 @@ alert(Number(amount).toFixed(2) + " insufficient tokens you requested");
                 handleOnTransaction()
             }, 2000)
         }
-    }, [isConnected, isLoading,amount])
+    }, [isConnected, isLoading, amount])
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', flex: 1, marginTop: 20, gap: 20 }}>
