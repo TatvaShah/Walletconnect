@@ -39,7 +39,7 @@ const Web3Connect = ({
         if (isSuccess) {
             const transactionHash = data?.hash;
             if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(transactionHash);
+                window.ReactNativeWebView.postMessage(JSON.stringify({error :false ,hash : transactionHash}));
             }
 
             setLoader(false);
@@ -52,12 +52,12 @@ const Web3Connect = ({
             if (errorMessage.length > 0) {
                 let errorMessageToShow = errorMessage[0];
                 if (errorMessageToShow.toLowerCase()?.includes("subtraction overflow")) {
-                    errorMessageToShow = `Your EVDC balance is insufficient. EVDC tokens needed : ${Number(amount).toFixed(2)} Your EVDC balance : ${Number(balanceData?.formatted).toFixed(2)}`;
+                    errorMessageToShow = `Your EVDC balance is insufficient.\nEVDC tokens needed : ${Number(amount).toFixed(2)}\nYour EVDC balance : ${Number(balanceData?.formatted).toFixed(2)}`;
                 } else {
                     errorMessageToShow = errorMessage[0].trimEnd();
                 }
                 if (window.ReactNativeWebView) {
-                    window.ReactNativeWebView.postMessage({ error: true, message: errorMessageToShow });
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ error: true, message: errorMessageToShow }));
                 } else {
                     alert(errorMessageToShow)
                 }
