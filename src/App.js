@@ -5,8 +5,7 @@ import { bsc, bscTestnet } from 'wagmi/chains'
 import Web3Connect from './Web3Connect'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-const contractAddress = '0xC3B4C4eF3fE02aD91cB57efda593ed07A9278cc0';
-const walletAddress = '0x93467f0F9a09b5478B0E2ECdA979045dda53750b';
+const contractAddress = '0x93749e69560efe1ad6661903e47df538492c50a4';
 const chains = [bsc, bscTestnet]
 const projectId = 'a6418a1e28c8c7ec2ef9fb805e53b33b'
 

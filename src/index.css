@@ -28,6 +28,22 @@ code {
   cursor: pointer;
 }
 
+.btn-class-3 { 
+  padding: 0px 15px 1px;
+  height: 40px;
+  border-radius: var(--w3m-button-border-radius);
+  border-color: red;
+  color: #ffff;
+  background-color: red;
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+}
+
 .btn-class-2:hover { 
   opacity: 0.9;
 }
