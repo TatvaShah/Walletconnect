@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Web3Button } from '@web3modal/react'
-import { useAccount, useBalance, useContractWrite, useToken, useWalletClient } from 'wagmi'
+import { useAccount, useBalance, useWriteContract, useToken, useWalletClient } from 'wagmi'
 import contractAbi from './contract-abi'
-import { ethers } from 'ethers'
-import axios from 'axios'
 import Image from './image'
 import BN from 'bignumber.js'
 import Modal from 'react-modal';
@@ -39,12 +36,17 @@ const Web3Connect = ({
     const tokenAmountToTransfer = new BN(Math.ceil(Number(amount)));
     const calculatedTransferValue = tokenAmountToTransfer.multipliedBy(new
         BN(10).pow(tokenDecimals));
-    const { isLoading, write, data, isSuccess, isError, error } = useContractWrite({ address: contractAddress, abi: contractAbi, functionName: 'transfer', args: [walletAddress, calculatedTransferValue] });
+    const { data: hash, error, isPending, writeContract } = useWriteContract()
     const handleOnTransaction = () => {
-        if (!isLoading) {
+        if (!isPending) {
             setShowModal(false)
             setLoader(true);
-            write()
+            writeContract({
+                address: contractAddress,
+                abi: contractAbi,
+                functionName: 'transfer',
+                args: [walletAddress, calculatedTransferValue],
+            })
         }
     }
     const OnCancelTransaction = () => {
@@ -53,8 +55,8 @@ const Web3Connect = ({
     }
 
     useEffect(() => {
-        if (isSuccess) {
-            const transactionHash = data?.hash;
+        if (hash) {
+            const transactionHash = hash;
             if (window.ReactNativeWebView) {
 
                 window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -65,10 +67,10 @@ const Web3Connect = ({
 
             setLoader(false);
         }
-    }, [isSuccess])
+    }, [hash])
 
     useEffect(() => {
-        if (isError) {
+        if (error) {
             console.log(error , "error")
             const errorMessage = error.message.split('Contract Call:');
             if (errorMessage.length > 0) {
@@ -90,17 +92,17 @@ const Web3Connect = ({
             }
             setLoader(false);
         }
-    }, [isError])
+    }, [error])
 
     useEffect(() => {
-        if (isConnected && !isLoading && amount) {
+        if (isConnected && !isPending && amount) {
             setLoader(true);
             setTimeout(() => {
                 setShowModal(true)
                 // handleOnTransaction()
             }, 2000)
         }
-    }, [isConnected, isLoading, amount])
+    }, [isConnected, isPending, amount])
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', flex: 1, marginTop: 20, gap: 20 }}>
@@ -115,7 +117,7 @@ const Web3Connect = ({
                 </Modal>
             }
             <img src={Image.EVDC_LOGO}></img>
-            <Web3Button icon={'show'} balance='show' label='Connect Wallet' />
+            <w3m-button />
             {
                 isConnected && <button disabled={loader} className='btn-class-2' onClick={handleOnTransaction} ><p className='btn-txt'>{loader ? `Loading...` : `Perform Transaction`}</p></button>
             }
